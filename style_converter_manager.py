@@ -1,19 +1,17 @@
-from ai_model import create_generator, convert_with_ai
-
-_generator = None
+from style_model_handler import create_generator, convert_with_ai
+from formal_converter import init_formal_generator
 
 def init_ai():
-    global _generator
-    _generator = create_generator()
+    create_generator()
+    init_formal_generator()
 
 def convert_text(text: str, style: str) -> str:
-    if _generator:
+    if style == "formal":
         try:
-            return convert_with_ai(_generator, style, text)
+            return convert_with_ai(style, text)
         except Exception as e:
             print(f"AI 변환 중 오류 발생: {e}")
     
-    # AI 변환 실패 또는 AI 사용 불가능할 때 기본 변환 로직 사용
     if style == "pretty":
         return f"{text}에용~"
     elif style == "cute":

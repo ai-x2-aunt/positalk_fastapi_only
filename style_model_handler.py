@@ -1,16 +1,17 @@
 from transformers import pipeline
 import torch
-from huggingface_hub import login
 import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
+from formal_converter import convert_to_formal
 
-MODEL_NAME = "9unu/formal_speech_translation"
-TIMEOUT_SECONDS = 10  # 시간 제한 (초)
+MODEL_NAME = "heegyu/kobart-text-style-transfer"
+TIMEOUT_SECONDS = 10
+_generator = None
 
 def create_generator():
     print("AI 모델 초기화 중...")
-    
-    return pipeline(
+    global _generator
+    _generator = pipeline(
         "text2text-generation",
         model=MODEL_NAME,
         device="cuda" if torch.cuda.is_available() else "cpu",
@@ -18,13 +19,15 @@ def create_generator():
         truncation=True
     )
 
-def convert_with_ai(generator, style: str, text: str) -> str:
+def convert_with_ai(style: str, text: str) -> str:
+    if style == "formal":
+        return convert_to_formal(text)
+        
     style_prompts = {
-        "pretty": f"비격식체를 귀엽고 예쁘게: {text}",
-        "cute": f"비격식체를 매우 귀엽게: {text}",
-        "polite": f"비격식체를 격식체로: {text}",
-        "formal": f"비격식체를 아주 격식있게: {text}",
-        "friendly": f"격식체를 친근하게: {text}"
+        "pretty": f"일반체를 귀여운체로: {text}",
+        "cute": f"일반체를 애교체로: {text}",
+        "polite": f"일반체를 존댓말로: {text}",
+        "friendly": f"일반체를 친근체로: {text}"
     }
     
     try:
@@ -33,9 +36,8 @@ def convert_with_ai(generator, style: str, text: str) -> str:
         
         prompt = style_prompts.get(style, f"변환: {text}")
         
-        # 시간 제한과 함께 변환 실행
         with ThreadPoolExecutor(max_workers=1) as executor:
-            future = executor.submit(generator, 
+            future = executor.submit(_generator, 
                 prompt,
                 max_length=100,
                 num_return_sequences=1,
