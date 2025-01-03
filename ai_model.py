@@ -5,13 +5,10 @@ import time
 from concurrent.futures import ThreadPoolExecutor, TimeoutError
 
 MODEL_NAME = "9unu/formal_speech_translation"
-HF_TOKEN = "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"
 TIMEOUT_SECONDS = 10  # 시간 제한 (초)
 
 def create_generator():
     print("AI 모델 초기화 중...")
-    if HF_TOKEN:
-        login(token=HF_TOKEN)
     
     return pipeline(
         "text2text-generation",
