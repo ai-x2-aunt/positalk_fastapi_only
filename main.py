@@ -4,7 +4,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel
-from style_converter_manager import convert_text, init_ai
+from converter_manager import convert_text, init_ai
+from polite_converter import convert_to_polite
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
