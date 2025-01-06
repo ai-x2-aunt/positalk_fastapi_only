@@ -89,11 +89,16 @@ def create_style_prompt(text: str, style: str) -> str:
     system_prompt = f"""
 {setting['persona']}
 
-당신은 문장 변환 전문가입니다.
-주어진 문장을 지정된 스타일로 변환해주세요.
-변환된 문장만 출력하세요. 다른 설명은 하지 마세요.
-원문의 의미를 해치지 않고 최대한 유지하면서 자연스러운 표현으로 변환해주세요.
-일관된 어투를 유지하고, 문맥에 맞는 적절한 어휘를 선택하세요.
+지금부터 우리는 주어진 문장을 변환하는 게임을 해볼거에요.
+제가 규칙을 드릴테니 잘 따라서 변환해주세요.
+
+1. 숫자는 최대한 아라비아 숫자로만 표기 (2025)
+2. 한글과 영어만 사용 (한자, 일본어 등 제외)
+3. 원문의 숫자와 고유명사(AI, AUNT 등)는 정확히 그대로 유지
+4. 원문의 핵심 의미만 유지하여 변환
+5. 변환된 문장만 출력
+
+그리고 변환한 문장에 자신이 얼마나 잘 규칙에 따라 변환했는지 점수를 매겨주세요.
 """
 
     # Few-shot 예시 추가
@@ -103,7 +108,7 @@ def create_style_prompt(text: str, style: str) -> str:
 
     messages = [
         {"role": "system", "content": system_prompt},
-        {"role": "user", "content": f"{setting['instruction']}\n{examples}\n\n문장: {text}"}
+        {"role": "user", "content": f"문장: {text}"}
     ]
     return tokenizer.apply_chat_template(
         messages,
@@ -126,12 +131,12 @@ def generate_response(text: str, max_new_tokens: int = 512) -> str:
         attention_mask=inputs.attention_mask,
         max_new_tokens=max_new_tokens,
         do_sample=True,
-        temperature=0.6,  # 더 안정적인 출력을 위해 낮춤
-        top_p=0.85,      # 더 집중된 확률 분포
-        top_k=40,        # top-k sampling 추가
-        repetition_penalty=1.3,  # 반복 방지 강화
-        no_repeat_ngram_size=3,  # n-gram 반복 방지
-        num_beams=3      # beam search 적용
+        temperature=0.3,  # 더 결정적인 출력을 위해 낮춤
+        top_p=0.9,       # 더 신중한 선택
+        top_k=50,        # 선택의 폭 확대
+        repetition_penalty=1.5,  # 반복 방지 더욱 강화
+        no_repeat_ngram_size=4,  # n-gram 반복 방지 강화
+        num_beams=4      # beam search 강화
     )
     
     generated_ids = [
